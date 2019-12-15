@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -10,21 +11,24 @@ namespace SwiftExcel
     {
         protected internal bool Finalized;
         protected internal string FilePath;
-        protected internal IList<string> SheetNames;
+        protected internal IList<Sheet> Sheets;
 
-        protected internal IList<string> SheetPaths;
         protected internal string OutputPath;
         protected internal string TempOutputPath;
 
-        protected ExcelWriterCore(string filePath, IList<string> sheetNames)
+        protected ExcelWriterCore(string filePath, IList<Sheet> sheets)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
                 throw new Exception("FilePath must not be empty.");
             }
+            if (sheets == null || sheets.All(g => string.IsNullOrWhiteSpace(g.Name)))
+            {
+                throw new Exception("At least one sheet must be defined.");
+            }
 
             FilePath = filePath;
-            SheetNames = sheetNames;
+            Sheets = sheets;
 
             Init();
         }
@@ -37,10 +41,9 @@ namespace SwiftExcel
 
             DirectoryHelper.CheckCreatePath(TempOutputPath);
 
-            SheetPaths = new List<string>();
-            for (var i = 1; i <= SheetNames.Count; i++)
+            for (var i = 0; i < Sheets.Count; i++)
             {
-                SheetPaths.Add($"{TempOutputPath}\\xl\\worksheets\\sheet{i}.xml");
+                Sheets[i].Path = $"{TempOutputPath}\\xl\\worksheets\\sheet{i+1}.xml";
             }
 
             CreateFolders();
@@ -91,15 +94,15 @@ namespace SwiftExcel
             using (TextWriter tw = new StreamWriter($"{TempOutputPath}/xl/_rels/workbook.xml.rels", false))
             {
                 var sheets = string.Empty;
-                for (var i = 1; i <= SheetNames.Count; i++)
+                for (var i = 1; i <= Sheets.Count; i++)
                 {
                     sheets += $"<Relationship Id=\"rId{i}\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet{i}.xml\"/>";
                 }
                 tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                          "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
                          sheets +
-                         $"<Relationship Id=\"rId{SheetNames.Count + 1}\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\"/>" +
-                         $"<Relationship Id=\"rId{SheetNames.Count + 2}\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>" +
+                         $"<Relationship Id=\"rId{Sheets.Count + 1}\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\"/>" +
+                         $"<Relationship Id=\"rId{Sheets.Count + 2}\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>" +
                          "</Relationships>");
 
             }
@@ -107,7 +110,7 @@ namespace SwiftExcel
 
         protected internal void CreateDocProps()
         {
-            var sheets = string.Join("", SheetNames.Select(g => $"<vt:lpstr>{g}</vt:lpstr>"));
+            var sheets = string.Join("", Sheets.Select(g => $"<vt:lpstr>{g.Name}</vt:lpstr>"));
             using (TextWriter tw = new StreamWriter($"{TempOutputPath}/docProps/app.xml", false))
             {
                 tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
@@ -118,11 +121,11 @@ namespace SwiftExcel
                          "<HeadingPairs>" +
                          "<vt:vector size=\"2\" baseType=\"variant\">" +
                          "<vt:variant><vt:lpstr>Worksheets</vt:lpstr></vt:variant>" +
-                         $"<vt:variant><vt:i4>{SheetNames.Count}</vt:i4></vt:variant>" +
+                         $"<vt:variant><vt:i4>{Sheets.Count}</vt:i4></vt:variant>" +
                          "</vt:vector>" +
                          "</HeadingPairs>" +
                          "<TitlesOfParts>" +
-                         $"<vt:vector size=\"{SheetNames.Count}\" baseType=\"lpstr\">{sheets}</vt:vector>" +
+                         $"<vt:vector size=\"{Sheets.Count}\" baseType=\"lpstr\">{sheets}</vt:vector>" +
                          "</TitlesOfParts>" +
                          "<Company></Company>" +
                          "<LinksUpToDate>false</LinksUpToDate>" +
@@ -145,7 +148,7 @@ namespace SwiftExcel
         protected internal void CreateContentTypes()
         {
             var sheets = string.Empty;
-            for (var i = 1; i <= SheetNames.Count; i++)
+            for (var i = 1; i <= Sheets.Count; i++)
             {
                 sheets += $"<Override PartName=\"/xl/worksheets/sheet{i}.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>";
             }
@@ -285,9 +288,9 @@ namespace SwiftExcel
         protected internal void CreateWorkbook()
         {
             var sheets = string.Empty;
-            for (var i = 0; i < SheetNames.Count; i++)
+            for (var i = 0; i < Sheets.Count; i++)
             {
-                sheets += $"<sheet name=\"{SheetNames[i]}\" sheetId=\"{i + 1}\" r:id=\"rId{i + 1}\"/>";
+                sheets += $"<sheet name=\"{Sheets[i].Name}\" sheetId=\"{i + 1}\" r:id=\"rId{i + 1}\"/>";
             }
 
             using (TextWriter tw = new StreamWriter($"{TempOutputPath}/xl/workbook.xml", false))
@@ -310,25 +313,45 @@ namespace SwiftExcel
 
         protected internal void StartSheets()
         {
-            for (var i = 0; i < SheetPaths.Count; i++)
+            for (var i = 0; i < Sheets.Count; i++)
             {
+                var sheet = Sheets[i];
+
                 var selected = i == 0 ? "tabSelected=\"1\"" : string.Empty;
-                using (TextWriter tw = new StreamWriter(SheetPaths[i]))
+                using (TextWriter tw = new StreamWriter(sheet.Path))
                 {
                     tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                              "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x14ac xr xr2 xr3\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" xmlns:xr=\"http://schemas.microsoft.com/office/spreadsheetml/2014/revision\" xmlns:xr2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/revision2\" xmlns:xr3=\"http://schemas.microsoft.com/office/spreadsheetml/2016/revision3\" xr:uid=\"{{EA47BE14-E914-42F7-BE8E-AEEE5780E9D7}}\">" +
                              "<dimension ref=\"A1\"/>" +
                              $"<sheetViews><sheetView {selected} workbookViewId=\"0\"/></sheetViews>" +
-                             "<sheetFormatPr defaultRowHeight=\"15\" x14ac:dyDescent=\"0.25\"/><sheetData/>");
+                             "<sheetFormatPr defaultRowHeight=\"15\" x14ac:dyDescent=\"0.25\"/>");
+
+                    //write column definition
+                    if (sheet.ColumnsWidth != null && sheet.ColumnsWidth.Any())
+                    {
+                        tw.Write("<cols>");
+                        for (var j = 0; j < sheet.ColumnsWidth.Count; j++)
+                        {
+                            tw.Write(GetExcelColumnDefinition(sheet.ColumnsWidth[j].ToString(CultureInfo.InvariantCulture), j + 1));
+                        }
+                        tw.Write("</cols>");
+                    }
+
+                    tw.Write("<sheetData/>");
                 }
             }
         }
 
+        private string GetExcelColumnDefinition(string width, int col)
+        {
+            return $"<col width=\"{width}\" min=\"{col}\" max=\"{col}\"/>";
+        }
+
         protected internal void FinishSheets()
         {
-            foreach (var path in SheetPaths)
+            foreach (var sheet in Sheets)
             {
-                using (TextWriter tw = new StreamWriter(path, true))
+                using (TextWriter tw = new StreamWriter(sheet.Path, true))
                 {
                     tw.Write("<pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/></worksheet>");
                 }

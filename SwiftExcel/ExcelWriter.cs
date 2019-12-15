@@ -4,8 +4,8 @@ namespace SwiftExcel
 {
     public class ExcelWriter : ExcelWriterCore
     {
-        public ExcelWriter(string filePath, IList<string> sheetNames)
-            : base(filePath, sheetNames)
+        public ExcelWriter(string filePath, IList<Sheet> sheets)
+            : base(filePath, sheets)
         {
         }
     }
