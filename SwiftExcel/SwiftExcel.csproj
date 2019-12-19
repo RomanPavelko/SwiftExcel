@@ -6,9 +6,10 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Authors>Roman Pavelko</Authors>
     <PackageLicenseFile>license.md</PackageLicenseFile>
-    <PackageProjectUrl>https://github.com/RomanPavelko/SwiftExcel</PackageProjectUrl>
+    <PackageProjectUrl>https://swiftexcel.azurewebsites.net/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/RomanPavelko/SwiftExcel</RepositoryUrl>
     <Copyright>2019 SwiftExcel Roman Pavelko</Copyright>
+    <PackageTags>Excel Writer ExcelWriter ExcelOpenXML</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
