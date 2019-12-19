@@ -10,6 +10,7 @@
     <RepositoryUrl>https://github.com/RomanPavelko/SwiftExcel</RepositoryUrl>
     <Copyright>2019 SwiftExcel Roman Pavelko</Copyright>
     <PackageTags>Excel Writer ExcelWriter ExcelOpenXML</PackageTags>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
