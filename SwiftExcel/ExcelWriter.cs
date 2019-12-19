@@ -1,25 +1,22 @@
-﻿using System.Collections.Generic;
-using System.Security;
-using SwiftExcel.Exceptions;
+﻿using System.Security;
 
 namespace SwiftExcel
 {
     public class ExcelWriter : ExcelWriterCore
     {
-        public ExcelWriter(string filePath, IList<Sheet> sheets)
-            : base(filePath, sheets)
+        public ExcelWriter(string filePath, Sheet sheet = null)
+            : base(filePath, sheet)
         {
         }
 
-        public void Write(string value, int col, int row, int sheetNumber, DataType dataType = DataType.Text)
+        public void Write(string value, int col, int row, DataType dataType = DataType.Text)
         {
-            var sheet = GetSheet(sheetNumber);
-            sheet.PrepareRow(col, row);
+            Sheet.PrepareRow(col, row);
 
             var data = GetCellData(value, col, row, dataType);
-            sheet.Write(data);
+            Sheet.Write(data);
 
-            sheet.CurrentRow = row;
+            Sheet.CurrentRow = row;
         }
 
         private static string GetCellData(string value, int col, int row, DataType dataType)
@@ -51,20 +48,6 @@ namespace SwiftExcel
             }
 
             return columnName;
-        }
-
-        private Sheet GetSheet(int sheetNumber)
-        {
-            if (sheetNumber <= 0)
-            {
-                throw new SwiftExcelException(SwiftExcelExceptionType.SheetNumberLessThanOne);
-            }
-            if (sheetNumber > Sheets.Count)
-            {
-                throw new SwiftExcelException(SwiftExcelExceptionType.SheetNumberOutOfRange, sheetNumber);
-            }
-
-            return Sheets[sheetNumber - 1];
         }
     }
 }

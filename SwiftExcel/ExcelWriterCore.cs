@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -11,24 +10,20 @@ namespace SwiftExcel
     {
         protected internal bool Finalized;
         protected internal string FilePath;
-        protected internal IList<Sheet> Sheets;
+        protected internal Sheet Sheet;
 
         protected internal string OutputPath;
         protected internal string TempOutputPath;
 
-        protected ExcelWriterCore(string filePath, IList<Sheet> sheets)
+        protected ExcelWriterCore(string filePath, Sheet sheet)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
                 throw new Exception("FilePath must not be empty.");
             }
-            if (sheets == null || sheets.All(g => string.IsNullOrWhiteSpace(g.Name)))
-            {
-                throw new Exception("At least one sheet must be defined.");
-            }
 
             FilePath = filePath;
-            Sheets = sheets;
+            Sheet = sheet ?? new Sheet { Name = "sheet 1" };
 
             Init();
         }
@@ -47,13 +42,8 @@ namespace SwiftExcel
             CreateDocProps();
             CreateContentTypes();
             CreateTheme();
-            CreateExcelStyles("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x14ac x16r2 xr\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" xmlns:x16r2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/02/main\" xmlns:xr=\"http://schemas.microsoft.com/office/spreadsheetml/2014/revision\"><fonts count=\"1\" x14ac:knownFonts=\"1\"><font><sz val=\"11\"/><color theme=\"1\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font></fonts><fills count=\"2\"><fill><patternFill patternType=\"none\"/></fill><fill><patternFill patternType=\"gray125\"/></fill></fills><borders count=\"1\"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs><cellXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/></cellXfs><cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles><dxfs count=\"0\"/><tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium2\" defaultPivotStyle=\"PivotStyleLight16\"/></styleSheet>");
+            CreateExcelStyles();
             CreateWorkbook();
-
-            for (var i = 0; i < Sheets.Count; i++)
-            {
-                Sheets[i].TextWriter = new StreamWriter($"{TempOutputPath}\\xl\\worksheets\\sheet{i + 1}.xml", false);
-            }
 
             StartSheets();
         }
@@ -93,24 +83,17 @@ namespace SwiftExcel
             }
             using (TextWriter tw = new StreamWriter($"{TempOutputPath}/xl/_rels/workbook.xml.rels", false))
             {
-                var sheets = string.Empty;
-                for (var i = 1; i <= Sheets.Count; i++)
-                {
-                    sheets += $"<Relationship Id=\"rId{i}\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet{i}.xml\"/>";
-                }
                 tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                          "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
-                         sheets +
-                         $"<Relationship Id=\"rId{Sheets.Count + 1}\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\"/>" +
-                         $"<Relationship Id=\"rId{Sheets.Count + 2}\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>" +
+                         "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/>" +
+                         "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\"/>" +
+                         "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>" +
                          "</Relationships>");
-
             }
         }
 
         protected internal void CreateDocProps()
         {
-            var sheets = string.Join("", Sheets.Select(g => $"<vt:lpstr>{g.Name}</vt:lpstr>"));
             using (TextWriter tw = new StreamWriter($"{TempOutputPath}/docProps/app.xml", false))
             {
                 tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
@@ -121,11 +104,11 @@ namespace SwiftExcel
                          "<HeadingPairs>" +
                          "<vt:vector size=\"2\" baseType=\"variant\">" +
                          "<vt:variant><vt:lpstr>Worksheets</vt:lpstr></vt:variant>" +
-                         $"<vt:variant><vt:i4>{Sheets.Count}</vt:i4></vt:variant>" +
+                         $"<vt:variant><vt:i4>1</vt:i4></vt:variant>" +
                          "</vt:vector>" +
                          "</HeadingPairs>" +
                          "<TitlesOfParts>" +
-                         $"<vt:vector size=\"{Sheets.Count}\" baseType=\"lpstr\">{sheets}</vt:vector>" +
+                         $"<vt:vector size=\"1\" baseType=\"lpstr\"><vt:lpstr>{Sheet.Name}</vt:lpstr></vt:vector>" +
                          "</TitlesOfParts>" +
                          "<Company></Company>" +
                          "<LinksUpToDate>false</LinksUpToDate>" +
@@ -147,11 +130,6 @@ namespace SwiftExcel
 
         protected internal void CreateContentTypes()
         {
-            var sheets = string.Empty;
-            for (var i = 1; i <= Sheets.Count; i++)
-            {
-                sheets += $"<Override PartName=\"/xl/worksheets/sheet{i}.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>";
-            }
             using (TextWriter tw = new StreamWriter($"{TempOutputPath}/[Content_Types].xml", false))
             {
                 tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
@@ -159,7 +137,7 @@ namespace SwiftExcel
                          "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>" +
                          "<Default Extension=\"xml\" ContentType=\"application/xml\"/>" +
                          "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>" +
-                         $"{sheets}" +
+                         "<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" +
                          "<Override PartName=\"/xl/theme/theme1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.theme+xml\"/>" +
                          "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>" +
                          "<Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/>" +
@@ -287,74 +265,88 @@ namespace SwiftExcel
 
         protected internal void CreateWorkbook()
         {
-            var sheets = string.Empty;
-            for (var i = 0; i < Sheets.Count; i++)
-            {
-                sheets += $"<sheet name=\"{Sheets[i].Name}\" sheetId=\"{i + 1}\" r:id=\"rId{i + 1}\"/>";
-            }
-
             using (TextWriter tw = new StreamWriter($"{TempOutputPath}/xl/workbook.xml", false))
             {
                 tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                          "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x15 xr xr6 xr10 xr2\" xmlns:x15=\"http://schemas.microsoft.com/office/spreadsheetml/2010/11/main\" xmlns:xr=\"http://schemas.microsoft.com/office/spreadsheetml/2014/revision\" xmlns:xr6=\"http://schemas.microsoft.com/office/spreadsheetml/2016/revision6\" xmlns:xr10=\"http://schemas.microsoft.com/office/spreadsheetml/2016/revision10\" xmlns:xr2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/revision2\">" +
                          "<bookViews><workbookView xWindow=\"3345\" yWindow=\"3675\" windowWidth=\"21600\" windowHeight=\"11385\" xr2:uid=\"{{0B3BF63D-56DA-4710-9C33-DB5A76182BCF}}\"/></bookViews>" +
-                         $"<sheets>{sheets}</sheets>" +
+                         $"<sheets><sheet name=\"{Sheet.Name}\" sheetId=\"1\" r:id=\"rId1\"/></sheets>" +
                          "</workbook>");
             }
         }
 
-        protected internal void CreateExcelStyles(string value)
+        protected internal void CreateExcelStyles()
         {
             using (TextWriter tw = new StreamWriter($"{TempOutputPath}/xl/styles.xml", false))
             {
-                tw.Write(value);
+                tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                         "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x14ac x16r2 xr\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" xmlns:x16r2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/02/main\" xmlns:xr=\"http://schemas.microsoft.com/office/spreadsheetml/2014/revision\">" +
+                         "<fonts count=\"1\" x14ac:knownFonts=\"1\">" +
+                         "<font><sz val=\"11\"/>" +
+                         "<color theme=\"1\"/>" +
+                         "<name val=\"Calibri\"/>" +
+                         "<family val=\"2\"/>" +
+                         "<scheme val=\"minor\"/>" +
+                         "</font>" +
+                         "</fonts>" +
+                         "<fills count=\"2\">" +
+                         "<fill><patternFill patternType=\"none\"/></fill>" +
+                         "<fill><patternFill patternType=\"gray125\"/></fill>" +
+                         "</fills>" +
+                         "<borders count=\"1\">" +
+                         "<border><left/><right/><top/><bottom/><diagonal/></border>" +
+                         "</borders>" +
+                         "<cellStyleXfs count=\"1\">" +
+                         "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/>" +
+                         "</cellStyleXfs>" +
+                         "<cellXfs count=\"1\">" +
+                         "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>" +
+                         "</cellXfs>" +
+                         "<cellStyles count=\"1\">" +
+                         "<cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/>" +
+                         "</cellStyles>" +
+                         "<dxfs count=\"0\"/><tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium2\" defaultPivotStyle=\"PivotStyleLight16\"/>" +
+                         "</styleSheet>");
             }
         }
 
         protected internal void StartSheets()
         {
-            for (var i = 0; i < Sheets.Count; i++)
+            Sheet.TextWriter = new StreamWriter($"{TempOutputPath}\\xl\\worksheets\\sheet1.xml", false);
+
+            Sheet.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                        "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x14ac xr xr2 xr3\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" xmlns:xr=\"http://schemas.microsoft.com/office/spreadsheetml/2014/revision\" xmlns:xr2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/revision2\" xmlns:xr3=\"http://schemas.microsoft.com/office/spreadsheetml/2016/revision3\" xr:uid=\"{{EA47BE14-E914-42F7-BE8E-AEEE5780E9D7}}\">" +
+                        "<dimension ref=\"A1\"/>" +
+                        "<sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"/></sheetViews>" +
+                        "<sheetFormatPr defaultRowHeight=\"15\" x14ac:dyDescent=\"0.25\"/>");
+
+            //write column definition
+            if (Sheet.ColumnsWidth != null && Sheet.ColumnsWidth.Any())
             {
-                var sheet = Sheets[i];
-
-                var selected = i == 0 ? "tabSelected=\"1\"" : string.Empty;
-                sheet.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
-                         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x14ac xr xr2 xr3\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" xmlns:xr=\"http://schemas.microsoft.com/office/spreadsheetml/2014/revision\" xmlns:xr2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/revision2\" xmlns:xr3=\"http://schemas.microsoft.com/office/spreadsheetml/2016/revision3\" xr:uid=\"{{EA47BE14-E914-42F7-BE8E-AEEE5780E9D7}}\">" +
-                         "<dimension ref=\"A1\"/>" +
-                         $"<sheetViews><sheetView {selected} workbookViewId=\"0\"/></sheetViews>" +
-                         "<sheetFormatPr defaultRowHeight=\"15\" x14ac:dyDescent=\"0.25\"/>");
-
-                //write column definition
-                if (sheet.ColumnsWidth != null && sheet.ColumnsWidth.Any())
+                Sheet.Write("<cols>");
+                for (var i = 0; i < Sheet.ColumnsWidth.Count; i++)
                 {
-                    sheet.Write("<cols>");
-                    for (var j = 0; j < sheet.ColumnsWidth.Count; j++)
-                    {
-                        sheet.Write(GetExcelColumnDefinition(sheet.ColumnsWidth[j].ToString(CultureInfo.InvariantCulture), j + 1));
-                    }
-                    sheet.Write("</cols>");
+                    Sheet.Write(GetExcelColumnDefinition(Sheet.ColumnsWidth[i].ToString(CultureInfo.InvariantCulture), i + 1));
                 }
-
-                sheet.Write("<sheetData>");
+                Sheet.Write("</cols>");
             }
+
+            Sheet.Write("<sheetData>");
         }
 
-        private string GetExcelColumnDefinition(string width, int col)
+        private static string GetExcelColumnDefinition(string width, int col)
         {
             return $"<col width=\"{width}\" min=\"{col}\" max=\"{col}\"/>";
         }
 
         protected internal void FinishSheets()
         {
-            foreach (var sheet in Sheets)
+            if (Sheet.CurrentRow != 0)
             {
-                if (sheet.CurrentRow != 0)
-                {
-                    sheet.Write("</row>");
-                }
-                sheet.Write("</sheetData><pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/></worksheet>");
-                sheet.TextWriter.Close();
+                Sheet.Write("</row>");
             }
+            Sheet.Write("</sheetData><pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/></worksheet>");
+            Sheet.TextWriter.Close();
         }
 
         #endregion
