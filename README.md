@@ -7,7 +7,7 @@ PM> Install-Package SwiftExcel
 ```
 # Usage
 ### Fill excel document with test data 100 rows x 10 columns
-```
+```csharp
 using (var ew = new ExcelWriter("C:\\temp\\test.xlsx"))
 {
     for (var row = 1; row <= 100; row++)
@@ -20,7 +20,7 @@ using (var ew = new ExcelWriter("C:\\temp\\test.xlsx"))
 }
 ```
 ### Set custom sheet name and define columns width
-```
+```csharp
 var sheet = new Sheet
 {
     Name = "Monthly Report", 
