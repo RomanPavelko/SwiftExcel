@@ -31,3 +31,13 @@ var sheet = new Sheet
 
 var ew = new ExcelWriter("C:\\temp\\test.xlsx", sheet)
 ```
+# Performance
+SwiftExcel has incredible performance due to ignoring XML serialization and streaming data directly to the file.  
+Below is performance test creating document with 100 000 rows and 100 columns comparing to other popular excel output libraries on Nuget.  
+
+|   | Execution Time | Memory Usage |
+| :--- | :---: | :---: |
+| SwiftExcel  | 14.2 sec  |  19 mb  |
+| FastExcel  | 31.1 sec  |  3200 mb  |
+| EPPlus  | 44.2 sec  |  2900 mb  |
+| Syncfusion.XlsIO  | 73.3 sec  |  2700 mb  |
