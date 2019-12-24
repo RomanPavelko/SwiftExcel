@@ -41,3 +41,4 @@ Below is performance test creating document with 100 000 rows and 100 columns co
 | FastExcel  | 31.1 sec  |  3200 mb  |
 | EPPlus  | 44.2 sec  |  2900 mb  |
 | Syncfusion.XlsIO  | 73.3 sec  |  2700 mb  |
+| IronXL  | 306.8 sec  |  7700 mb  |
