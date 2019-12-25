@@ -29,7 +29,7 @@ var sheet = new Sheet
     ColumnsWidth = new List<double> { 10, 12, 8, 8, 35 }
 };
 
-var ew = new ExcelWriter("C:\\temp\\test.xlsx", sheet)
+var ew = new ExcelWriter("C:\\temp\\test.xlsx", sheet);
 ```
 # Performance
 SwiftExcel has incredible performance due to ignoring XML serialization and streaming data directly to the file.  
