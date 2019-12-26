@@ -51,9 +51,16 @@ namespace SwiftExcel
         public void Save()
         {
             FinishSheets();
-            DirectoryHelper.DeleteFile(FilePath);
-            ZipFile.CreateFromDirectory(TempOutputPath, FilePath);
-            DirectoryHelper.DeleteDirectory(TempOutputPath);
+
+            try
+            {
+                DirectoryHelper.DeleteFile(FilePath);
+                ZipFile.CreateFromDirectory(TempOutputPath, FilePath);
+            }
+            finally
+            {
+                DirectoryHelper.DeleteDirectory(TempOutputPath);
+            }
 
             Finalized = true;
         }
