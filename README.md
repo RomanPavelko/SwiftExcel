@@ -43,3 +43,6 @@ Below is performance test creating document with 100 000 rows and 100 columns co
 | Syncfusion.XlsIO  | 73.3 sec  |  2700 mb  |
 | IronXL.Excel  | 306.8 sec  |  7700 mb  |
 | Microsoft Interop Excel  | >3 hours  |  27 mb  |
+
+# SwiftExcel.Pro
+Check out [.Pro version](https://swiftexcel.pro/) for advanced feautres like working with multiple sheets or applying styles.
