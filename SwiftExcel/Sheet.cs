@@ -10,6 +10,7 @@ namespace SwiftExcel
         public IList<double> ColumnsWidth { get; set; }
 
         internal TextWriter TextWriter { get; set; }
+        internal int CurrentCol { get; set; }
         internal int CurrentRow { get; set; }
 
         internal void Write(string value)
@@ -50,6 +51,13 @@ namespace SwiftExcel
             else if (row < CurrentRow)
             {
                 throw new SwiftExcelException(SwiftExcelExceptionType.RowNumberAlreadyProcessed, row);
+            }
+            else
+            {
+                if (col <= CurrentCol)
+                {
+                    throw new SwiftExcelException(SwiftExcelExceptionType.ColNumberAlreadyProcessed, col, row);
+                }
             }
         }
     }

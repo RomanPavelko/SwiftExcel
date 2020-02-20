@@ -6,6 +6,7 @@
         SheetNumberOutOfRange,
         RowNumberLessThanOne,
         ColNumberLessThanOne,
-        RowNumberAlreadyProcessed
+        RowNumberAlreadyProcessed,
+        ColNumberAlreadyProcessed
     }
 }

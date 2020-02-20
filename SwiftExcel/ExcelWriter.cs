@@ -16,6 +16,7 @@ namespace SwiftExcel
             var data = GetCellData(value, col, row, dataType);
             Sheet.Write(data);
 
+            Sheet.CurrentCol = col;
             Sheet.CurrentRow = row;
         }
 

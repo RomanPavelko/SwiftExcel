@@ -4,12 +4,12 @@ namespace SwiftExcel.Exceptions
 {
     public class SwiftExcelException : Exception
     {
-        public SwiftExcelException(SwiftExcelExceptionType type, object data = null)
-            : base(GetMessage(type, data))
+        public SwiftExcelException(SwiftExcelExceptionType type, object data = null, object additionalData = null)
+            : base(GetMessage(type, data, additionalData))
         {
         }
 
-        internal static string GetMessage(SwiftExcelExceptionType type, object data)
+        internal static string GetMessage(SwiftExcelExceptionType type, object data, object additionalData)
         {
             switch (type)
             {
@@ -23,6 +23,8 @@ namespace SwiftExcel.Exceptions
                     return "Row number must be 1 or greater.";
                 case SwiftExcelExceptionType.RowNumberAlreadyProcessed:
                     return $"Row {data} has already been processed.";
+                case SwiftExcelExceptionType.ColNumberAlreadyProcessed:
+                    return $"Column {data} has already been processed in Row {additionalData}.";
                 default:
                     return "Unhandled exception";
             }
