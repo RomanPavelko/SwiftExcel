@@ -1,4 +1,7 @@
-﻿using System.Security;
+﻿using System.Linq;
+using System.Security;
+using System.Text;
+using System.Xml;
 
 namespace SwiftExcel
 {
@@ -22,13 +25,13 @@ namespace SwiftExcel
 
         private static string GetCellData(string value, int col, int row, DataType dataType)
         {
-            if (string.IsNullOrEmpty(value))
+            if (string.IsNullOrWhiteSpace(value))
             {
                 return string.Empty;
             }
 
             var t = dataType == DataType.Text ? " t=\"str\"" : string.Empty;
-            return $"<c r=\"{GetFullCellName(col, row)}\"{t}><v>{SecurityElement.Escape(value.Trim())}</v></c>";
+            return $"<c r=\"{GetFullCellName(col, row)}\"{t}><v>{EscapeInvalidChars(value.Trim())}</v></c>";
         }
         
         private static string GetFullCellName(int col, int row)
@@ -49,6 +52,31 @@ namespace SwiftExcel
             }
 
             return columnName;
+        }
+
+        private static string EscapeInvalidChars(string value)
+        {
+            value = SecurityElement.Escape(value);
+
+            if (string.IsNullOrEmpty(value) || value.All(XmlConvert.IsXmlChar))
+            {
+                return value;
+            }
+
+            var result = new StringBuilder();
+            foreach (var character in value)
+            {
+                if (XmlConvert.IsXmlChar(character))
+                {
+                    result.Append(character);
+                }
+                else
+                {
+                    result.Append($"_x{(int)character:x4}_");
+                }
+            }
+
+            return result.ToString();
         }
     }
 }
