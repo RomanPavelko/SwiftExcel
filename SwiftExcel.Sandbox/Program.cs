@@ -7,7 +7,7 @@ namespace SwiftExcel.Sandbox
         private static void Main()
         {
             //Fill excel document with test data 100 rows x 10 columns
-            using (var ew = new ExcelWriter("C:\\temp\\test.xlsx"))
+            using (var ew = new ExcelWriter("C:/temp/test.xlsx"))
             {
                 for (var row = 1; row <= 100; row++)
                 {
@@ -27,7 +27,7 @@ namespace SwiftExcel.Sandbox
                 ColumnsWidth = new List<double> { 10, 12, 8, 8, 35 }
             };
 
-            var ew2 = new ExcelWriter("C:\\temp\\test.xlsx", sheet);
+            var ew2 = new ExcelWriter("C:/temp/test.xlsx", sheet);
             for (var row = 1; row <= 100; row++)
             {
                 for (var col = 1; col <= 10; col++)
