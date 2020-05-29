@@ -24,8 +24,8 @@ namespace SwiftExcel.Sandbox
             }
 
 
-            ////Set custom sheet name and define columns width
-            ////Use manual Save() instead of using block 
+            //Set custom sheet name and define columns width
+            //Use manual Save() instead of using block 
             var sheet = new Sheet
             {
                 Name = "Monthly Report",
