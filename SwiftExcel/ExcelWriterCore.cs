@@ -23,7 +23,7 @@ namespace SwiftExcel
             }
 
             FilePath = filePath;
-            Sheet = sheet ?? new Sheet { Name = "sheet 1" };
+            Sheet = sheet ?? new Sheet();
 
             Init();
         }

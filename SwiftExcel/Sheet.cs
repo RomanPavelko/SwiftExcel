@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using SwiftExcel.Exceptions;
+using System.Collections.Generic;
 using System.IO;
-using SwiftExcel.Exceptions;
 
 namespace SwiftExcel
 {
     public class Sheet
     {
-        public string Name { get; set; }
+        public const string DefaultName = "Sheet1";
+
+        public string Name { get; set; } = DefaultName;
         public IList<double> ColumnsWidth { get; set; }
 
         internal TextWriter TextWriter { get; set; }
