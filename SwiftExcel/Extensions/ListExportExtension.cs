@@ -7,41 +7,36 @@ namespace SwiftExcel.Extensions
 {
     public static class ListExportExtension
     {
+        private const double DefaultColumnWidth = 15.00;
+
         private const int HeaderRowNumber = 1;
 
         private const int SkipZeroIndexStep = 1;
 
-        public static void ExportToExcel<TData>(this IList<TData> entities, string filePath, string sheetName = null, double? columnsWidth = null)
+        public static void ExportToExcel<TData>(this IList<TData> entities, string filePath, string sheetName = null)
         {
             var properties = typeof(TData).GetProperties().Order();
 
-            using (var excelWriter = new ExcelWriter(filePath, properties.CreateSheet(sheetName, columnsWidth)))
+            using (var excelWriter = new ExcelWriter(filePath, properties.CreateSheet(sheetName)))
             {
-                try
-                {
-                    excelWriter
-                        .CreateHeader(properties)
-                        .PopulateBody(entities, properties)
-                        .Save();
-                }
-                finally
-                {
-                    excelWriter.Dispose();
-                }
+                excelWriter
+                    .CreateHeader(properties)
+                    .PopulateBody(entities, properties)
+                    .Save();
             }
         }
 
         private static IList<PropertyInfo> Order(this IList<PropertyInfo> properties)
         {
-            return properties.OrderBy(property => property.GetDisplayOrder()).ToList();
+            return properties.OrderBy(property => property.GetExportOrderOrDefault() ?? int.MaxValue).ToList();
         }
 
-        private static Sheet CreateSheet(this IList<PropertyInfo> properties, string sheetName, double? columnsWidth)
+        private static Sheet CreateSheet(this IList<PropertyInfo> properties, string sheetName)
         {
             return new Sheet
             {
                 Name = sheetName ?? Sheet.DefaultName,
-                ColumnsWidth = columnsWidth.HasValue ? properties.Select(property => columnsWidth.Value).ToList() : default
+                ColumnsWidth = properties.Select(property => property.GetExportWidthOrDefault() ?? DefaultColumnWidth).ToList()
             };
         }
 
@@ -50,7 +45,7 @@ namespace SwiftExcel.Extensions
             for (var i = 0; i < properties.Count; i++)
             {
                 var columnNumber = i + SkipZeroIndexStep;
-                excelWriter.Write(properties[i].GetDisplayName(), columnNumber, HeaderRowNumber);
+                excelWriter.Write(properties[i].GetExportNameOrDefault() ?? properties[i].Name, columnNumber, HeaderRowNumber);
             }
 
             return excelWriter;

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using SwiftExcel.Attributes;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 
@@ -20,23 +20,27 @@ namespace SwiftExcel.Extensions
         {
             return propertyInfo.GetValue(entity)?.ToString();
         }
-        
-        public static DisplayAttribute GetDisplayAttributeOrDefault(this MemberInfo memberInfo)
-        {
-            var displayAttributes = memberInfo.GetCustomAttributes(typeof(DisplayAttribute), true);
 
-            return displayAttributes.Any() ? displayAttributes.Cast<DisplayAttribute>().Single() : null;
+        public static ExcelExportAttribute GetExcelExportAttributeOrDefault(this MemberInfo memberInfo)
+        {
+            var exportAttributes = memberInfo.GetCustomAttributes(typeof(ExcelExportAttribute), true);
+
+            return exportAttributes.Any() ? exportAttributes.Cast<ExcelExportAttribute>().Single() : null;
         }
 
-        public static string GetDisplayName(this MemberInfo memberInfo)
+        public static string GetExportNameOrDefault(this MemberInfo memberInfo)
         {
-            var displayName = memberInfo.GetDisplayAttributeOrDefault()?.GetName();
-            return !string.IsNullOrEmpty(displayName) ? displayName : memberInfo.Name;
+            return memberInfo.GetExcelExportAttributeOrDefault()?.GetName();
         }
 
-        public static int GetDisplayOrder(this MemberInfo memberInfo)
+        public static int? GetExportOrderOrDefault(this MemberInfo memberInfo)
         {
-            return memberInfo.GetDisplayAttributeOrDefault()?.GetOrder() ?? int.MaxValue;
+            return memberInfo.GetExcelExportAttributeOrDefault()?.GetOrder();
+        }
+
+        public static double? GetExportWidthOrDefault(this MemberInfo memberInfo)
+        {
+            return memberInfo.GetExcelExportAttributeOrDefault()?.GetWidth();
         }
 
         public static bool IsNumeric(this Type type)

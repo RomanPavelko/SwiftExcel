@@ -54,8 +54,8 @@ namespace SwiftExcel.Sandbox
             testCollection.ExportToExcel(FilePath);
 
 
-            //Export list of objects to Excel file with predefined Sheet name and columns width
-            testCollection.ExportToExcel(FilePath, sheetName: "Sheet2", columnsWidth: 40.00);
+            //Export list of objects to Excel file with predefined Sheet name
+            testCollection.ExportToExcel(FilePath, sheetName: "Sheet2");
         }
     }
 }
