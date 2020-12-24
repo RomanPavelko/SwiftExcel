@@ -31,6 +31,21 @@ var sheet = new Sheet
 
 var ew = new ExcelWriter("C:\\temp\\test.xlsx", sheet);
 ```
+### Using formulas. Output 20 values and calculate average, count, max and sum
+```csharp
+using (var ew = new ExcelWriter("C:\\temp\\test.xlsx"))
+{
+    for (var row = 1; row <= 20; row++)
+    {
+        ew.Write(row.ToString(), 1, row, DataType.Number);
+    }
+
+    ew.WriteFormula(FormulaType.Average, 1, 22, 1, 1, 20);
+    ew.WriteFormula(FormulaType.Count, 1, 23, 1, 1, 20);
+    ew.WriteFormula(FormulaType.Max, 1, 24, 1, 1, 20);
+    ew.WriteFormula(FormulaType.Sum, 1, 25, 1, 1, 20);
+}
+```
 # Performance
 SwiftExcel has incredible performance due to ignoring XML serialization and streaming data directly to the file.  
 Below is performance test creating document with 100 000 rows and 100 columns comparing to other popular Excel output libraries on Nuget.  
