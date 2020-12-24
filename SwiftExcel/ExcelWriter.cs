@@ -14,9 +14,20 @@ namespace SwiftExcel
 
         public void Write(string value, int col, int row, DataType dataType = DataType.Text)
         {
+            var data = GetCellData(value, col, row, dataType);
+            Write(col, row, data);
+        }
+
+        public void WriteFormula(FormulaType type, int col, int row, int sourceCol, int sourceRowStart, int sourceRowEnd)
+        {
+            var data = GetCellDataFormula(type, col, row, sourceCol, sourceRowStart, sourceRowEnd);
+            Write(col, row, data);
+        }
+
+        private void Write(int col, int row, string data)
+        {
             Sheet.PrepareRow(col, row);
 
-            var data = GetCellData(value, col, row, dataType);
             Sheet.Write(data);
 
             Sheet.CurrentCol = col;
@@ -32,6 +43,11 @@ namespace SwiftExcel
 
             var t = dataType == DataType.Text ? " t=\"str\"" : string.Empty;
             return $"<c r=\"{GetFullCellName(col, row)}\"{t}><v>{EscapeInvalidChars(value.Trim())}</v></c>";
+        }
+
+        private static string GetCellDataFormula(FormulaType type, int col, int row, int sourceCol, int sourceRowStart, int sourceRowEnd)
+        {
+            return $"<c r=\"{GetFullCellName(col, row)}\"><f>{type.ToString().ToUpper()}({GetFullCellName(sourceCol, sourceRowStart)}:{GetFullCellName(sourceCol, sourceRowEnd)})</f><v></v></c>";
         }
         
         private static string GetFullCellName(int col, int row)

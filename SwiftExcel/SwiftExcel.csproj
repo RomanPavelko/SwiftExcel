@@ -10,13 +10,13 @@
     <RepositoryUrl>https://github.com/RomanPavelko/SwiftExcel</RepositoryUrl>
     <Copyright>2020 SwiftExcel Roman Pavelko</Copyright>
     <PackageTags>Excel Writer ExcelWriter Export ExcelExport ExcelXML ExcelOpenXML SwiftExcel XLS XLSX C# .NET</PackageTags>
-    <Version>1.0.7</Version>
+    <Version>1.0.8</Version>
     <Description>Lightweight, extremely fast and memory efficient Excel output library for .NET and .NET Core applications. Build your Excel reports in fraction of seconds with no memory footprint thanks to skipping XML serialization and streaming data directly to the file.</Description>
     <PackageIcon>logo.png</PackageIcon>
     <PackageIconUrl />
-    <AssemblyVersion>1.0.7.0</AssemblyVersion>
-    <FileVersion>1.0.7.0</FileVersion>
-    <PackageReleaseNotes>Replacing backslashes with slashes when working with file system in order to support Linux-based systems.</PackageReleaseNotes>
+    <AssemblyVersion>1.0.8.0</AssemblyVersion>
+    <FileVersion>1.0.8.0</FileVersion>
+    <PackageReleaseNotes>Introducing Excel Formulas (AVERAGE, COUNT, MAX and SUM).</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

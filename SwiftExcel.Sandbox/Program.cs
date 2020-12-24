@@ -44,6 +44,23 @@ namespace SwiftExcel.Sandbox
             _excelWriter.Save();
 
 
+            //Formula examples
+            using (_excelWriter = new ExcelWriter(FilePath))
+            {
+                const int col = 1;
+                var row = 1;
+                for (; row <= 20; row++)
+                {
+                    _excelWriter.Write(row.ToString(), col, row, DataType.Number);
+                }
+
+                _excelWriter.WriteFormula(FormulaType.Average, col, ++row, col, 1, 20);
+                _excelWriter.WriteFormula(FormulaType.Count, col, ++row, col, 1, 20);
+                _excelWriter.WriteFormula(FormulaType.Max, col, ++row, col, 1, 20);
+                _excelWriter.WriteFormula(FormulaType.Sum, col, ++row, col, 1, 20);
+            }
+
+
             //Initiate test collection
             var testCollection = new List<TestModel>
             {
