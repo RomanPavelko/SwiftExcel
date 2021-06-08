@@ -17,9 +17,12 @@
     <AssemblyVersion>1.0.8.0</AssemblyVersion>
     <FileVersion>1.0.8.0</FileVersion>
     <PackageReleaseNotes>Introducing Excel Formulas (AVERAGE, COUNT, MAX and SUM).</PackageReleaseNotes>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\key.snk" Link="key.snk" />
     <None Include="..\license.md">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
