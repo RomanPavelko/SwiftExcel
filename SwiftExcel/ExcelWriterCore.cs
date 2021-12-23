@@ -324,7 +324,7 @@ namespace SwiftExcel
             Sheet.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x14ac xr xr2 xr3\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" xmlns:xr=\"http://schemas.microsoft.com/office/spreadsheetml/2014/revision\" xmlns:xr2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/revision2\" xmlns:xr3=\"http://schemas.microsoft.com/office/spreadsheetml/2016/revision3\" xr:uid=\"{{EA47BE14-E914-42F7-BE8E-AEEE5780E9D7}}\">" +
                         "<dimension ref=\"A1\"/>" +
-                        "<sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"/></sheetViews>" +
+                        $"<sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\" rightToLeft=\"{(Sheet.RightToLeft ? "1" : "0")}\"/></sheetViews>" +
                         "<sheetFormatPr defaultRowHeight=\"15\" x14ac:dyDescent=\"0.25\"/>");
 
             //write column definition

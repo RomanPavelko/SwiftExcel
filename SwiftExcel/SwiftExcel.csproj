@@ -10,13 +10,13 @@
     <RepositoryUrl>https://github.com/RomanPavelko/SwiftExcel</RepositoryUrl>
     <Copyright>2021 SwiftExcel Roman Pavelko</Copyright>
     <PackageTags>Excel Writer ExcelWriter Export ExcelExport ExcelXML ExcelOpenXML SwiftExcel XLS XLSX C# .NET</PackageTags>
-    <Version>1.0.9</Version>
+    <Version>1.0.10</Version>
     <Description>Lightweight, extremely fast and memory efficient Excel output library for .NET and .NET Core applications. Build your Excel reports in fraction of seconds with no memory footprint thanks to skipping XML serialization and streaming data directly to the file.</Description>
     <PackageIcon>logo.png</PackageIcon>
     <PackageIconUrl />
-    <AssemblyVersion>1.0.9.0</AssemblyVersion>
-    <FileVersion>1.0.9.0</FileVersion>
-    <PackageReleaseNotes>Sign assembly functionality.</PackageReleaseNotes>
+    <AssemblyVersion>1.0.10.0</AssemblyVersion>
+    <FileVersion>1.0.10.0</FileVersion>
+    <PackageReleaseNotes>Added "Right To Left" Excel feature which is availabled under individual sheet configuration.</PackageReleaseNotes>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>

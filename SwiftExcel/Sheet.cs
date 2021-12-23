@@ -9,6 +9,7 @@ namespace SwiftExcel
         public const string DefaultName = "Sheet1";
 
         public string Name { get; set; } = DefaultName;
+        public bool RightToLeft { get; set; }
         public IList<double> ColumnsWidth { get; set; }
 
         internal TextWriter TextWriter { get; set; }
