@@ -47,8 +47,8 @@ using (var ew = new ExcelWriter("C:\\temp\\test.xlsx"))
 }
 ```
 # Performance
-SwiftExcel has incredible performance due to ignoring XML serialization and streaming data directly to the file.  
-Below is performance test creating document with 100 000 rows and 100 columns comparing to other popular Excel output libraries on Nuget.  
+SwiftExcel has incredible performance due to ignoring XML serialization and streaming data directly to the file. 
+Below is a performance test creating a document with 100 000 rows and 100 columns compared to other popular Excel output libraries on Nuget.
 
 |   | Execution Time | Memory Usage |
 | :--- | :---: | :---: |
@@ -60,4 +60,4 @@ Below is performance test creating document with 100 000 rows and 100 columns co
 | Microsoft Interop Excel  | >3 hours  |  27 mb  |
 
 # SwiftExcel.Pro
-Check out [.Pro version](https://swiftexcel.pro/) for advanced feautres like working with multiple sheets or applying custom styles.
+Check out the [.Pro version](https://swiftexcel.pro/) for advanced features like working with multiple sheets or applying custom styles.
