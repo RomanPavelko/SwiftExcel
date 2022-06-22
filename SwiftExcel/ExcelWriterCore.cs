@@ -307,7 +307,7 @@ namespace SwiftExcel
                          "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/>" +
                          "</cellStyleXfs>" +
                          "<cellXfs count=\"1\">" +
-                         "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>" +
+                         $"<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\">{(Sheet.WrapText ? "<alignment wrapText=\"1\"/>" : "")}</xf>" +
                          "</cellXfs>" +
                          "<cellStyles count=\"1\">" +
                          "<cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/>" +

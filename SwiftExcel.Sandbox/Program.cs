@@ -24,12 +24,13 @@ namespace SwiftExcel.Sandbox
             }
 
 
-            //Set custom sheet name, define columns width and right to left
+            //Set custom sheet name, define columns width, right to left and wrap text
             //Use manual Save() instead of using block 
             var sheet = new Sheet
             {
                 Name = "Monthly Report",
                 RightToLeft = true,
+                WrapText = true,
                 ColumnsWidth = new List<double> { 10, 12, 8, 8, 35 }
             };
 

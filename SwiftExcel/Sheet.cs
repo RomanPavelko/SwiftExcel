@@ -10,6 +10,7 @@ namespace SwiftExcel
 
         public string Name { get; set; } = DefaultName;
         public bool RightToLeft { get; set; }
+        public bool WrapText { get; set; }
         public IList<double> ColumnsWidth { get; set; }
 
         internal TextWriter TextWriter { get; set; }
