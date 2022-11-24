@@ -64,5 +64,14 @@ namespace SwiftExcel
                 }
             }
         }
+
+        internal string GetFormattedName()
+        {
+            return string.IsNullOrEmpty(Name)
+                ? DefaultName
+                : Name.Length > 31
+                    ? Name.Substring(0, 31).Trim()
+                    : Name;
+        }
     }
 }

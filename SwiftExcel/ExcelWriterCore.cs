@@ -115,7 +115,7 @@ namespace SwiftExcel
                          "</vt:vector>" +
                          "</HeadingPairs>" +
                          "<TitlesOfParts>" +
-                         $"<vt:vector size=\"1\" baseType=\"lpstr\"><vt:lpstr>{Sheet.Name}</vt:lpstr></vt:vector>" +
+                         $"<vt:vector size=\"1\" baseType=\"lpstr\"><vt:lpstr>{Sheet.GetFormattedName()}</vt:lpstr></vt:vector>" +
                          "</TitlesOfParts>" +
                          "<Company></Company>" +
                          "<LinksUpToDate>false</LinksUpToDate>" +
@@ -277,7 +277,7 @@ namespace SwiftExcel
                 tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                          "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x15 xr xr6 xr10 xr2\" xmlns:x15=\"http://schemas.microsoft.com/office/spreadsheetml/2010/11/main\" xmlns:xr=\"http://schemas.microsoft.com/office/spreadsheetml/2014/revision\" xmlns:xr6=\"http://schemas.microsoft.com/office/spreadsheetml/2016/revision6\" xmlns:xr10=\"http://schemas.microsoft.com/office/spreadsheetml/2016/revision10\" xmlns:xr2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/revision2\">" +
                          "<bookViews><workbookView xWindow=\"3345\" yWindow=\"3675\" windowWidth=\"21600\" windowHeight=\"11385\" xr2:uid=\"{{0B3BF63D-56DA-4710-9C33-DB5A76182BCF}}\"/></bookViews>" +
-                         $"<sheets><sheet name=\"{Sheet.Name}\" sheetId=\"1\" r:id=\"rId1\"/></sheets>" +
+                         $"<sheets><sheet name=\"{Sheet.GetFormattedName()}\" sheetId=\"1\" r:id=\"rId1\"/></sheets>" +
                          "</workbook>");
             }
         }
