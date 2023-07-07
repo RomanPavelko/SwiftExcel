@@ -13,13 +13,14 @@ namespace SwiftExcel
         public bool WrapText { get; set; }
         public IList<double> ColumnsWidth { get; set; }
 
-        internal TextWriter TextWriter { get; set; }
+        internal Stream Stream { get; set; }
+        internal StreamWriter StreamWriter { get; set; }
         internal int CurrentCol { get; set; }
         internal int CurrentRow { get; set; }
 
         internal void Write(string value)
         {
-            TextWriter.Write(value);
+            StreamWriter.Write(value);
         }
 
         internal void PrepareRow(int col, int row)
@@ -61,6 +62,16 @@ namespace SwiftExcel
                 if (col <= CurrentCol)
                 {
                     throw new SwiftExcelException(SwiftExcelExceptionType.ColNumberAlreadyProcessed, col, row);
+                }
+            }
+
+            //fill empty cells
+            var colDifference = col - CurrentCol;
+            if (colDifference > 1)
+            {
+                for (var i = 1; i < colDifference; i++)
+                {
+                    Write("<c t=\"str\"><v></v></c>");
                 }
             }
         }

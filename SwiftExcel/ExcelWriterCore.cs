@@ -1,8 +1,11 @@
-﻿using System;
+﻿using SharpCompress.Common;
+using SharpCompress.Writers;
+using SharpCompress.Writers.Zip;
+using System;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
+using System.Text;
 
 namespace SwiftExcel
 {
@@ -13,7 +16,9 @@ namespace SwiftExcel
         protected internal Sheet Sheet;
 
         protected internal string OutputPath;
-        protected internal string TempOutputPath;
+
+        protected internal Stream Stream;
+        protected internal ZipWriter ZipWriter;
 
         protected ExcelWriterCore(string filePath, Sheet sheet)
         {
@@ -32,11 +37,10 @@ namespace SwiftExcel
         {
             var fileInfo = new FileInfo(FilePath);
             OutputPath = fileInfo.Directory?.FullName;
-            TempOutputPath = $"{OutputPath}/{Guid.NewGuid()}";
+            DirectoryHelper.CheckCreatePath(OutputPath);
 
-            DirectoryHelper.CheckCreatePath(TempOutputPath);
-
-            CreateFolders();
+            Stream = new FileStream(FilePath, FileMode.Create, FileAccess.Write);
+            ZipWriter = (ZipWriter)WriterFactory.Open(Stream, ArchiveType.Zip, new ZipWriterOptions(CompressionType.Deflate) { DeflateCompressionLevel = SharpCompress.Compressors.Deflate.CompressionLevel.BestSpeed, UseZip64 = true });
 
             CreateRels();
             CreateDocProps();
@@ -52,45 +56,31 @@ namespace SwiftExcel
         {
             FinishSheets();
 
-            try
-            {
-                DirectoryHelper.DeleteFile(FilePath);
-                ZipFile.CreateFromDirectory(TempOutputPath, FilePath);
-            }
-            finally
-            {
-                DirectoryHelper.DeleteDirectory(TempOutputPath);
-            }
+            ZipWriter.Dispose();
+            Stream.Dispose();
 
             Finalized = true;
         }
 
         #region static content
 
-        protected internal void CreateFolders()
-        {
-            Directory.CreateDirectory($"{TempOutputPath}/_rels");
-            Directory.CreateDirectory($"{TempOutputPath}/docProps");
-            Directory.CreateDirectory($"{TempOutputPath}/xl");
-            Directory.CreateDirectory($"{TempOutputPath}/xl/_rels");
-            Directory.CreateDirectory($"{TempOutputPath}/xl/theme");
-            Directory.CreateDirectory($"{TempOutputPath}/xl/worksheets");
-        }
-
         protected internal void CreateRels()
         {
-            using (TextWriter tw = new StreamWriter($"{TempOutputPath}/_rels/.rels", false))
+            using (var subStream = ZipWriter.WriteToStream("_rels/.rels", new ZipWriterEntryOptions()))
+            using (var subStreamWriter = new StreamWriter(subStream, Encoding.UTF8))
             {
-                tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                subStreamWriter.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                          "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
                          "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"docProps/app.xml\"/>" +
                          "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\"/>" +
                          "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/>" +
                          "</Relationships>");
             }
-            using (TextWriter tw = new StreamWriter($"{TempOutputPath}/xl/_rels/workbook.xml.rels", false))
+
+            using (var subStream = ZipWriter.WriteToStream("xl/_rels/workbook.xml.rels", new ZipWriterEntryOptions()))
+            using (var subStreamWriter = new StreamWriter(subStream, Encoding.UTF8))
             {
-                tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                subStreamWriter.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                          "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
                          "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/>" +
                          "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\"/>" +
@@ -101,9 +91,10 @@ namespace SwiftExcel
 
         protected internal void CreateDocProps()
         {
-            using (TextWriter tw = new StreamWriter($"{TempOutputPath}/docProps/app.xml", false))
+            using (var subStream = ZipWriter.WriteToStream("docProps/app.xml", new ZipWriterEntryOptions()))
+            using (var subStreamWriter = new StreamWriter(subStream, Encoding.UTF8))
             {
-                tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                subStreamWriter.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                          "<Properties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/extended-properties\" xmlns:vt=\"http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes\">" +
                          "<Application>Microsoft Excel</Application>" +
                          "<DocSecurity>0</DocSecurity>" +
@@ -123,9 +114,11 @@ namespace SwiftExcel
                          "<HyperlinksChanged>false</HyperlinksChanged>" +
                          "<AppVersion>16.0300</AppVersion></Properties>");
             }
-            using (TextWriter tw = new StreamWriter($"{TempOutputPath}/docProps/core.xml", false))
+
+            using (var subStream = ZipWriter.WriteToStream("docProps/core.xml", new ZipWriterEntryOptions()))
+            using (var subStreamWriter = new StreamWriter(subStream, Encoding.UTF8))
             {
-                tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                subStreamWriter.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                          "<cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns:dcmitype=\"http://purl.org/dc/dcmitype/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" +
                          "<dc:creator></dc:creator>" +
                          "<cp:lastModifiedBy></cp:lastModifiedBy>" +
@@ -137,9 +130,10 @@ namespace SwiftExcel
 
         protected internal void CreateContentTypes()
         {
-            using (TextWriter tw = new StreamWriter($"{TempOutputPath}/[Content_Types].xml", false))
+            using (var subStream = ZipWriter.WriteToStream("[Content_Types].xml", new ZipWriterEntryOptions()))
+            using (var subStreamWriter = new StreamWriter(subStream, Encoding.UTF8))
             {
-                tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                subStreamWriter.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                          "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">" +
                          "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>" +
                          "<Default Extension=\"xml\" ContentType=\"application/xml\"/>" +
@@ -155,9 +149,10 @@ namespace SwiftExcel
 
         protected internal void CreateTheme()
         {
-            using (TextWriter tw = new StreamWriter($"{TempOutputPath}/xl/theme/theme1.xml", false))
+            using (var subStream = ZipWriter.WriteToStream("xl/theme/theme1.xml", new ZipWriterEntryOptions()))
+            using (var subStreamWriter = new StreamWriter(subStream, Encoding.UTF8))
             {
-                tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                subStreamWriter.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                          "<a:theme xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" name=\"Office Theme\">" +
                          "<a:themeElements>" +
                          "<a:clrScheme name=\"Office\">" +
@@ -272,9 +267,10 @@ namespace SwiftExcel
 
         protected internal void CreateWorkbook()
         {
-            using (TextWriter tw = new StreamWriter($"{TempOutputPath}/xl/workbook.xml", false))
+            using (var subStream = ZipWriter.WriteToStream("xl/workbook.xml", new ZipWriterEntryOptions()))
+            using (var subStreamWriter = new StreamWriter(subStream, Encoding.UTF8))
             {
-                tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                subStreamWriter.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                          "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x15 xr xr6 xr10 xr2\" xmlns:x15=\"http://schemas.microsoft.com/office/spreadsheetml/2010/11/main\" xmlns:xr=\"http://schemas.microsoft.com/office/spreadsheetml/2014/revision\" xmlns:xr6=\"http://schemas.microsoft.com/office/spreadsheetml/2016/revision6\" xmlns:xr10=\"http://schemas.microsoft.com/office/spreadsheetml/2016/revision10\" xmlns:xr2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/revision2\">" +
                          "<bookViews><workbookView xWindow=\"3345\" yWindow=\"3675\" windowWidth=\"21600\" windowHeight=\"11385\" xr2:uid=\"{{0B3BF63D-56DA-4710-9C33-DB5A76182BCF}}\"/></bookViews>" +
                          $"<sheets><sheet name=\"{Sheet.GetFormattedName()}\" sheetId=\"1\" r:id=\"rId1\"/></sheets>" +
@@ -284,9 +280,10 @@ namespace SwiftExcel
 
         protected internal void CreateExcelStyles()
         {
-            using (TextWriter tw = new StreamWriter($"{TempOutputPath}/xl/styles.xml", false))
+            using (var subStream = ZipWriter.WriteToStream("xl/styles.xml", new ZipWriterEntryOptions()))
+            using (var subStreamWriter = new StreamWriter(subStream, Encoding.UTF8))
             {
-                tw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                subStreamWriter.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                          "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x14ac x16r2 xr\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" xmlns:x16r2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/02/main\" xmlns:xr=\"http://schemas.microsoft.com/office/spreadsheetml/2014/revision\">" +
                          "<fonts count=\"1\" x14ac:knownFonts=\"1\">" +
                          "<font><sz val=\"11\"/>" +
@@ -319,7 +316,8 @@ namespace SwiftExcel
 
         protected internal void StartSheets()
         {
-            Sheet.TextWriter = new StreamWriter($"{TempOutputPath}/xl/worksheets/sheet1.xml", false);
+            Sheet.Stream = ZipWriter.WriteToStream("xl/worksheets/sheet1.xml", new ZipWriterEntryOptions());
+            Sheet.StreamWriter = new InvariantCultureStreamWriter(Sheet.Stream);
 
             Sheet.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                         "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x14ac xr xr2 xr3\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" xmlns:xr=\"http://schemas.microsoft.com/office/spreadsheetml/2014/revision\" xmlns:xr2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/revision2\" xmlns:xr3=\"http://schemas.microsoft.com/office/spreadsheetml/2016/revision3\" xr:uid=\"{{EA47BE14-E914-42F7-BE8E-AEEE5780E9D7}}\">" +
@@ -353,7 +351,8 @@ namespace SwiftExcel
                 Sheet.Write("</row>");
             }
             Sheet.Write("</sheetData><pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/></worksheet>");
-            Sheet.TextWriter.Close();
+            Sheet.StreamWriter.Dispose();
+            Sheet.Stream.Dispose();
         }
 
         #endregion

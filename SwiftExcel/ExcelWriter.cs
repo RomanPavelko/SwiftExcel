@@ -14,40 +14,35 @@ namespace SwiftExcel
 
         public void Write(string value, int col, int row, DataType dataType = DataType.Text)
         {
-            var data = GetCellData(value, col, row, dataType);
-            Write(col, row, data);
-        }
-
-        public void WriteFormula(FormulaType type, int col, int row, int sourceCol, int sourceRowStart, int sourceRowEnd)
-        {
-            var data = GetCellDataFormula(type, col, row, sourceCol, sourceRowStart, sourceRowEnd);
-            Write(col, row, data);
-        }
-
-        private void Write(int col, int row, string data)
-        {
             Sheet.PrepareRow(col, row);
 
-            Sheet.Write(data);
+            Sheet.Write("<c");
+            if (dataType == DataType.Text)
+            {
+                Sheet.Write(" t=\"str\"");
+            }
+            Sheet.Write("><v>");
+            Sheet.Write(EscapeInvalidChars(value));
+            Sheet.Write("</v></c>");
 
             Sheet.CurrentCol = col;
             Sheet.CurrentRow = row;
         }
 
-        private static string GetCellData(string value, int col, int row, DataType dataType)
+        public void WriteFormula(FormulaType type, int col, int row, int sourceCol, int sourceRowStart, int sourceRowEnd)
         {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return string.Empty;
-            }
+            Sheet.PrepareRow(col, row);
 
-            var t = dataType == DataType.Text ? " t=\"str\"" : string.Empty;
-            return $"<c r=\"{GetFullCellName(col, row)}\"{t}><v>{EscapeInvalidChars(value.Trim())}</v></c>";
-        }
+            Sheet.Write("<c><f>");
+            Sheet.Write($"{type.ToString().ToUpper()}");
+            Sheet.Write("(");
+            Sheet.Write($"{GetFullCellName(sourceCol, sourceRowStart)}");
+            Sheet.Write(":");
+            Sheet.Write($"{GetFullCellName(sourceCol, sourceRowEnd)}");
+            Sheet.Write(")</f><v></v></c>");
 
-        private static string GetCellDataFormula(FormulaType type, int col, int row, int sourceCol, int sourceRowStart, int sourceRowEnd)
-        {
-            return $"<c r=\"{GetFullCellName(col, row)}\"><f>{type.ToString().ToUpper()}({GetFullCellName(sourceCol, sourceRowStart)}:{GetFullCellName(sourceCol, sourceRowEnd)})</f><v></v></c>";
+            Sheet.CurrentCol = col;
+            Sheet.CurrentRow = row;
         }
         
         private static string GetFullCellName(int col, int row)
