@@ -1,6 +1,7 @@
 ﻿using SwiftExcel.Exceptions;
 using System.Collections.Generic;
 using System.IO;
+using System.Security;
 
 namespace SwiftExcel
 {
@@ -78,11 +79,13 @@ namespace SwiftExcel
 
         internal string GetFormattedName()
         {
-            return string.IsNullOrEmpty(Name)
+            var name = string.IsNullOrEmpty(Name)
                 ? DefaultName
                 : Name.Length > 31
                     ? Name.Substring(0, 31).Trim()
                     : Name;
+
+            return SecurityElement.Escape(name);
         }
     }
 }

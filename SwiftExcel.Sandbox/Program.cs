@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using static System.Net.Mime.MediaTypeNames;
+using System.Reflection.Metadata;
 
 namespace SwiftExcel.Sandbox
 {
@@ -15,6 +17,7 @@ namespace SwiftExcel.Sandbox
         {
             var stopwatch = Stopwatch.StartNew();
 
+
             //Fill excel document with test data 100 rows x 10 columns
             using (_excelWriter = new ExcelWriter(FilePath))
             {
@@ -26,6 +29,19 @@ namespace SwiftExcel.Sandbox
                     }
                 }
             }
+
+
+            //Invalid XML characters
+            //Configuration.UseEnchancedXmlEscaping = true;
+            //using (_excelWriter = new ExcelWriter(FilePath))
+            //{
+            //    _excelWriter.Write("<", 1, 1);
+            //    _excelWriter.Write(">", 2, 1);
+            //    _excelWriter.Write("&", 3, 1);
+            //    _excelWriter.Write("'", 4, 1);
+            //    _excelWriter.Write("\"", 5, 1);
+            //}
+
 
             //Set custom sheet name, define columns width, right to left and wrap text
             //Use manual Save() instead of using block 

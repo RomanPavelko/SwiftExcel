@@ -68,6 +68,10 @@ namespace SwiftExcel
         private static string EscapeInvalidChars(string value)
         {
             value = SecurityElement.Escape(value);
+            if (!Configuration.UseEnchancedXmlEscaping)
+            {
+                return value;
+            }
 
             if (string.IsNullOrEmpty(value) || value.All(XmlConvert.IsXmlChar))
             {
