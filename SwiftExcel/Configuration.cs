@@ -2,6 +2,6 @@
 {
     public static class Configuration
     {
-        public static bool UseEnchancedXmlEscaping { get; set; } = false;
+        public static bool UseEnchancedXmlEscaping { get; set; } = true;
     }
 }
