@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.24.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SwiftExcel\SwiftExcel.csproj" />
   </ItemGroup>
 

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using System.Security;
 using System.Text;
 using System.Xml;
@@ -7,8 +8,23 @@ namespace SwiftExcel
 {
     public class ExcelWriter : ExcelWriterCore
     {
+        /// <summary>
+        /// Create an instance of ExcelWriter
+        /// </summary>
+        /// <param name="filePath">Full path to the result file</param>
+        /// <param name="sheet">Optional: Custom sheet configuration</param>
         public ExcelWriter(string filePath, Sheet sheet = null)
             : base(filePath, sheet)
+        {
+        }
+
+        /// <summary>
+        /// Create an instance of ExcelWriter
+        /// </summary>
+        /// <param name="stream">Provide your own stream to the result file. It can be either your own FileStream or a stream representing a cloud storage instance like Azure Blob</param>
+        /// <param name="sheet">Optional: Custom sheet configuration</param>
+        public ExcelWriter(Stream stream, Sheet sheet = null)
+            : base(stream, sheet)
         {
         }
 

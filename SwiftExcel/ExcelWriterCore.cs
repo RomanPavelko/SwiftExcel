@@ -19,6 +19,7 @@ namespace SwiftExcel
 
         protected internal Stream Stream;
         protected internal ZipWriter ZipWriter;
+        protected internal bool IsStreamExternal;
 
         protected ExcelWriterCore(string filePath, Sheet sheet)
         {
@@ -28,19 +29,32 @@ namespace SwiftExcel
             }
 
             FilePath = filePath;
-            Sheet = sheet ?? new Sheet();
-
-            Init();
+            Init(sheet);
         }
 
-        protected internal void Init()
+        protected ExcelWriterCore(Stream stream, Sheet sheet)
         {
-            var fileInfo = new FileInfo(FilePath);
-            OutputPath = fileInfo.Directory?.FullName;
-            DirectoryHelper.CheckCreatePath(OutputPath);
+            Stream = stream ?? throw new Exception("Stream must not be empty.");
+            IsStreamExternal = true;
+            Init(sheet);
+        }
 
-            Stream = new FileStream(FilePath, FileMode.Create, FileAccess.Write);
-            ZipWriter = (ZipWriter)WriterFactory.Open(Stream, ArchiveType.Zip, new ZipWriterOptions(CompressionType.Deflate) { DeflateCompressionLevel = SharpCompress.Compressors.Deflate.CompressionLevel.BestSpeed, UseZip64 = true });
+        protected internal void Init(Sheet sheet)
+        {
+            Sheet = sheet ?? new Sheet();
+
+            // for some streams like ones created by Azure BlobClient, Zip64 is not supported since they are non-seekable streams
+            var useZip64 = false;
+
+            if (!string.IsNullOrEmpty(FilePath))
+            {
+                useZip64 = true;
+                var fileInfo = new FileInfo(FilePath);
+                OutputPath = fileInfo.Directory?.FullName;
+                DirectoryHelper.CheckCreatePath(OutputPath);
+                Stream = new FileStream(FilePath, FileMode.Create, FileAccess.Write);
+            }
+            ZipWriter = (ZipWriter)WriterFactory.Open(Stream, ArchiveType.Zip, new ZipWriterOptions(CompressionType.Deflate) { DeflateCompressionLevel = SharpCompress.Compressors.Deflate.CompressionLevel.BestSpeed, UseZip64 = useZip64 });
 
             CreateRels();
             CreateDocProps();
@@ -57,7 +71,10 @@ namespace SwiftExcel
             FinishSheets();
 
             ZipWriter.Dispose();
-            Stream.Dispose();
+            if (!IsStreamExternal)
+            {
+                Stream.Dispose();
+            }
 
             Finalized = true;
         }

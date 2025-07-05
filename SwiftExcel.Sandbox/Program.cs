@@ -2,14 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using static System.Net.Mime.MediaTypeNames;
-using System.Reflection.Metadata;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Specialized;
+using System.IO;
 
 namespace SwiftExcel.Sandbox
 {
     internal class Program
     {
         private const string FilePath = "C:/temp/test.xlsx";
+        private const string ConnectionString = "your_connection_string";
+        private const string ContainerName = "your_container_name";
+        private const string BlobName = "test.xlsx";
 
         private static ExcelWriter _excelWriter;
 
@@ -17,11 +21,10 @@ namespace SwiftExcel.Sandbox
         {
             var stopwatch = Stopwatch.StartNew();
 
-
             //Fill excel document with test data 100 rows x 10 columns
             using (_excelWriter = new ExcelWriter(FilePath))
             {
-                for (var row = 1; row <= 100000; row++)
+                for (var row = 1; row <= 100; row++)
                 {
                     for (var col = 1; col <= 100; col++)
                     {
@@ -29,6 +32,45 @@ namespace SwiftExcel.Sandbox
                     }
                 }
             }
+
+
+            //Use Azure Blob Storage to directly upload file over a stream
+            //var blobServiceClient = new BlobServiceClient(ConnectionString);
+            //var containerClient = blobServiceClient.GetBlobContainerClient(ContainerName);
+            //var blobClient = containerClient.GetBlockBlobClient(BlobName);
+            //using (var stream = blobClient.OpenWrite(true))
+            //{
+            //    using (_excelWriter = new ExcelWriter(stream))
+            //    {
+            //        for (var row = 1; row <= 100; row++)
+            //        {
+            //            for (var col = 1; col <= 100; col++)
+            //            {
+            //                _excelWriter.Write($"row:{row}-col:{col}", col, row);
+            //            }
+            //        }
+            //    }
+            //}
+
+
+            //Upload generated file to Azure Blob Storage
+            //using (_excelWriter = new ExcelWriter(FilePath))
+            //{
+            //    for (var row = 1; row <= 100; row++)
+            //    {
+            //        for (var col = 1; col <= 100; col++)
+            //        {
+            //            _excelWriter.Write($"row:{row}-col:{col}", col, row);
+            //        }
+            //    }
+            //}
+            //var blobServiceClient = new BlobServiceClient(ConnectionString);
+            //var containerClient = blobServiceClient.GetBlobContainerClient(ContainerName);
+            //var blobClient = containerClient.GetBlockBlobClient(BlobName);
+            //using (var fileStream = new FileStream(FilePath, FileMode.Open))
+            //{
+            //    blobClient.Upload(fileStream);
+            //}
 
 
             //Invalid XML characters
