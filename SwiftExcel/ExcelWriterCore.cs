@@ -61,6 +61,7 @@ namespace SwiftExcel
             CreateContentTypes();
             CreateTheme();
             CreateExcelStyles();
+            CreateSharedStrings();
             CreateWorkbook();
 
             StartSheets();
@@ -328,6 +329,15 @@ namespace SwiftExcel
                          "</cellStyles>" +
                          "<dxfs count=\"0\"/><tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium2\" defaultPivotStyle=\"PivotStyleLight16\"/>" +
                          "</styleSheet>");
+            }
+        }
+
+        protected internal void CreateSharedStrings()
+        {
+            using (var subStream = ZipWriter.WriteToStream("xl/sharedStrings.xml", new ZipWriterEntryOptions()))
+            using (var subStreamWriter = new StreamWriter(subStream, Encoding.UTF8))
+            {
+                subStreamWriter.Write("<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"0\" uniqueCount=\"0\"/>");
             }
         }
 
