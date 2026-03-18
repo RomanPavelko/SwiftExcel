@@ -337,7 +337,8 @@ namespace SwiftExcel
             using (var subStream = ZipWriter.WriteToStream("xl/sharedStrings.xml", new ZipWriterEntryOptions()))
             using (var subStreamWriter = new StreamWriter(subStream, Encoding.UTF8))
             {
-                subStreamWriter.Write("<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"0\" uniqueCount=\"0\"/>");
+                subStreamWriter.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" + 
+                    "<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"0\" uniqueCount=\"0\"/>");
             }
         }
 
