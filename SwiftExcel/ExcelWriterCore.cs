@@ -54,7 +54,13 @@ namespace SwiftExcel
                 DirectoryHelper.CheckCreatePath(OutputPath);
                 Stream = new FileStream(FilePath, FileMode.Create, FileAccess.Write);
             }
-            ZipWriter = (ZipWriter)WriterFactory.Open(Stream, ArchiveType.Zip, new ZipWriterOptions(CompressionType.Deflate) { DeflateCompressionLevel = SharpCompress.Compressors.Deflate.CompressionLevel.BestSpeed, UseZip64 = useZip64 });
+
+            var options = new ZipWriterOptions(
+                CompressionType.Deflate,
+                SharpCompress.Compressors.Deflate.CompressionLevel.BestSpeed
+            );
+
+            ZipWriter = (ZipWriter)WriterFactory.OpenWriter(Stream, ArchiveType.Zip, new ZipWriterOptions(CompressionType.Deflate, SharpCompress.Compressors.Deflate.CompressionLevel.BestSpeed) { UseZip64 = useZip64 });
 
             CreateRels();
             CreateDocProps();
