@@ -55,12 +55,22 @@ namespace SwiftExcel
                 Stream = new FileStream(FilePath, FileMode.Create, FileAccess.Write);
             }
 
-            var options = new ZipWriterOptions(
-                CompressionType.Deflate,
-                SharpCompress.Compressors.Deflate.CompressionLevel.BestSpeed
-            );
+            // Create options instance without directly calling the UseZip64 setter.
+            var options = new ZipWriterOptions(CompressionType.Deflate, SharpCompress.Compressors.Deflate.CompressionLevel.BestSpeed);
+            try
+            {
+                var prop = options.GetType().GetProperty("UseZip64");
+                if (prop != null && prop.CanWrite)
+                {
+                    prop.SetValue(options, useZip64);
+                }
+            }
+            catch
+            {
+                // ignore - property not present or cannot be written to on runtime SharpCompress
+            }
 
-            ZipWriter = (ZipWriter)WriterFactory.OpenWriter(Stream, ArchiveType.Zip, new ZipWriterOptions(CompressionType.Deflate, SharpCompress.Compressors.Deflate.CompressionLevel.BestSpeed) { UseZip64 = useZip64 });
+            ZipWriter = (ZipWriter)WriterFactory.OpenWriter(Stream, ArchiveType.Zip, options);
 
             CreateRels();
             CreateDocProps();
