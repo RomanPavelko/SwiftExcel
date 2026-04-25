@@ -41,6 +41,9 @@ namespace SwiftExcel
                 if (CurrentRow != 0)
                 {
                     Write("</row>");
+
+                    //reset CurrentCol position to 0 for new row
+                    CurrentCol = 0;
                 }
 
                 //if skipping rows - add empty entries
