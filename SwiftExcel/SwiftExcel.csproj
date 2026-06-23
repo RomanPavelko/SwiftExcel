@@ -12,13 +12,13 @@
     <RepositoryUrl>https://github.com/RomanPavelko/SwiftExcel</RepositoryUrl>
     <Copyright>2026 SwiftExcel Roman Pavelko</Copyright>
     <PackageTags>Excel Writer ExcelWriter Export ExcelExport ExcelXML ExcelOpenXML SwiftExcel XLS XLSX C# .NET</PackageTags>
-    <Version>1.1.10</Version>
+    <Version>1.1.11</Version>
     <Description>Lightweight, extremely fast and memory efficient Excel output library for .NET and .NET Core applications. Build your Excel reports in fraction of seconds with no memory footprint thanks to skipping XML serialization and streaming data directly to the file.</Description>
     <PackageIcon>logo.png</PackageIcon>
     <PackageIconUrl />
-    <AssemblyVersion>1.1.10.0</AssemblyVersion>
-    <FileVersion>1.1.10.0</FileVersion>
-    <PackageReleaseNotes>Bug Fix: Resolved an issue where the column counter was not reset between rows, causing cells written to a non-first column position on a new row to be placed incorrectly.</PackageReleaseNotes>
+    <AssemblyVersion>1.1.11.0</AssemblyVersion>
+    <FileVersion>1.1.11.0</FileVersion>
+    <PackageReleaseNotes>Dependency Update: Upgraded SharpCompress from 0.47.3 to 0.49.1 to address known security vulnerabilities.</PackageReleaseNotes>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\key.snk</AssemblyOriginatorKeyFile>
     <OutputType>Library</OutputType>
@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpCompress" Version="0.47.3" />
+    <PackageReference Include="SharpCompress" Version="0.49.1" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
     <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
